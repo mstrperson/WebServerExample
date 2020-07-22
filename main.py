@@ -72,7 +72,7 @@ class WebServer(BaseHTTPRequestHandler):
 # end of class WebServer
 
 # Create an instance of the WebServer.
-webserver = HTTPServer((hostname, port), WebServer)
+webserver = HTTPServer(("", port), WebServer)
 
 
 # I need this to be able to run the webserver in parallel with the update code that connects to the Arduino.
