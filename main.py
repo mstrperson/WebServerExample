@@ -26,14 +26,32 @@ except:
 
 # Base HTTP settings
 hostname = "localhost"  # localhost (or 127.0.0.1) means "this computer"
-port = 8080             # different from standard internet port, which is port 80.  8080 is alternate standard.
+port = 8080  # different from standard internet port, which is port 80.  8080 is alternate standard.
 
 # some default data to have before the program reads /actual data/ from the Arduino.
 data = json.loads('{"temp":-1.0,"hum":-1.0,"hId":-1.0}')
 
+
 # This is the code that defines what the Web Page will look like!
 class WebServer(BaseHTTPRequestHandler):
     pageTitle = "The Coolest Room Temperature Monitor Ever"
+
+    css = "<style>" \
+          "body { max-width: 700px; margin: auto; border: 3px solid blue }" \
+          "table { width: 100% }" \
+          "th { font-weight: bold; font-size: large }" \
+          "td { font-weight: normal; font-size: normal; text-align: center }" \
+          "header { font-size: larger; font-weight: normal; color: white; background-color: black }" \
+          "</style>"
+
+    def body(self):
+           return  "<body>" \
+                   "<header>" + datetime.now().strftime("%H:%M:%S") + "</header>" \
+                   "<table>" \
+                   "<tr><th>Tempearture</th><th>Humidity</th><th>Heat Index</th></tr>" \
+                   "<tr><td>" + str(data["temp"]) + "</td><td>" + str(data["hum"]) + "</td><td>" + str(data["hId"]) + "</td></tr>" \
+                   "</table>" \
+                   "</body>"
 
     # particularly, this method is what runs when you open your web browser and go to 'http://localhost:8080'
     def do_GET(self):
@@ -43,27 +61,26 @@ class WebServer(BaseHTTPRequestHandler):
         self.end_headers()
 
         # Actual Content of the WebPage
-        global data     # this accesses the json data defined later in the program.
+        global data  # this accesses the json data defined later in the program.
 
         # This is the HTML that gets served to the web browser.
-        self.wfile.write(bytes("<html><head><title>" + self.pageTitle + "</title></head><body>", "utf-8"))
-        self.wfile.write(bytes("<header>" + datetime.now().strftime("%H:%M:%S") + "</header>", "utf-8"))
-        self.wfile.write(bytes("<table><tr><th>Tempearture</th><th>Humidity</th><th>Heat Index</th></tr>", "utf-8"))
-        # the data[] json object is constantly updated by the remaining Arduino code, so this web page will always have
-        # the most up to date values for each of the variable!
-        self.wfile.write(bytes("<tr><td>" + str(data["temp"]) + "</td><td>" + str(data["hum"]) +
-                               "</td><td>" + str(data["hId"]) + "</td>", "utf-8"))
-        self.wfile.write(bytes("</table></body></html>", "utf-8"))
+        self.wfile.write(bytes("<html><head><title>" + self.pageTitle + "</title>" + self.css + "</head><body>", "utf-8"))
+        self.wfile.write(bytes(self.body(), "utf-8"))
+        self.wfile.write(bytes("</html>", "utf-8"))
+
 
 # end of class WebServer
 
 # Create an instance of the WebServer.
 webserver = HTTPServer((hostname, port), WebServer)
 
+
 # I need this to be able to run the webserver in parallel with the update code that connects to the Arduino.
 def run():
     print("starting webserver")
     webserver.serve_forever()
+
+
 # end run()
 
 # create a Thread which runs the webserver.
@@ -75,7 +92,7 @@ webServerThread.start()
 # Now back to the Arduino code.
 print("Webserver Running...")
 
-# this loop runs forever (just like webserver.serve_forever()
+# this loop runs forever [just like webserver.serve_forever()]
 # the print statements are just for debugging purposes and you can comment them out if you don't want them there~
 while True:
     print(datetime.now())
