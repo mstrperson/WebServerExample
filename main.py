@@ -37,21 +37,24 @@ class WebServer(BaseHTTPRequestHandler):
     pageTitle = "The Coolest Room Temperature Monitor Ever"
 
     css = "<style>" \
-          "body { max-width: 700px; margin: auto; border: 3px solid blue }" \
-          "table { width: 100% }" \
-          "th { font-weight: bold; font-size: large }" \
+          "body { max-width: 700px; margin: auto; border: 3px solid blue } " \
+          "table { width: 100% } " \
+          "th { background-color: orangered; color: peachpuff; font-weight: bold; font-size: large } " \
           "td { font-weight: normal; font-size: normal; text-align: center }" \
-          "header { font-size: larger; font-weight: normal; color: white; background-color: black }" \
+          "header { font-size: larger; font-weight: normal; color: white; background-color: black } " \
+          "p { background-color: red; color: white; font-weight: bolder; font-size: larger; padding: 5px } " \
           "</style>"
 
     def body(self):
-           return  "<body>" \
-                   "<header>" + datetime.now().strftime("%H:%M:%S") + "</header>" \
-                   "<table>" \
-                   "<tr><th>Tempearture</th><th>Humidity</th><th>Heat Index</th></tr>" \
-                   "<tr><td>" + str(data["temp"]) + "</td><td>" + str(data["hum"]) + "</td><td>" + str(data["hId"]) + "</td></tr>" \
-                   "</table>" \
-                   "</body>"
+       global data
+       return  "<body>" \
+               "<header>" + datetime.now().strftime("%H:%M:%S") + "</header>" \
+               "<table>" \
+               "<tr><th>Tempearture</th><th>Humidity</th><th>Heat Index</th></tr>" \
+               "<tr><td>" + str(data["temp"]) + "</td><td>" + str(data["hum"]) + "</td><td>" + str(data["hId"]) + "</td></tr>" \
+               "</table>" + \
+               str(data["act"] and "<p>Intruder Alert!</p>" or "") + \
+               "</body>"
 
     # particularly, this method is what runs when you open your web browser and go to 'http://localhost:8080'
     def do_GET(self):
@@ -64,7 +67,11 @@ class WebServer(BaseHTTPRequestHandler):
         global data  # this accesses the json data defined later in the program.
 
         # This is the HTML that gets served to the web browser.
-        self.wfile.write(bytes("<html><head><title>" + self.pageTitle + "</title>" + self.css + "</head><body>", "utf-8"))
+        self.wfile.write(bytes("<html><head>" +
+                               "<title>" + self.pageTitle + "</title>" +
+                               self.css +
+                               '<meta http-equiv="refresh" content="10"/>' +
+                               "</head>", "utf-8"))
         self.wfile.write(bytes(self.body(), "utf-8"))
         self.wfile.write(bytes("</html>", "utf-8"))
 
